@@ -21,21 +21,18 @@ jobs:
       
     - name: Build x86
       run: |
-        cd build-lua/src
         make generic LUA_A=liblua.dll LUA_SO=
         cp liblua.dll ../../
       working-directory: ./build-lua/src
     
     - name: Build x86_64
       run: |
-        cd build-lua/src
         make generic LUA_A=liblua_x86_64.dll LUA_SO=
         cp liblua_x86_64.dll ../../
       working-directory: ./build-lua/src
     
     - name: Build arm64
       run: |
-        cd build-lua/src
         make generic LUA_A=liblua_arm64.so LUA_SO=
         cp liblua_arm64.so ../../
       working-directory: ./build-lua/src
