@@ -22,19 +22,32 @@ jobs:
     - name: Build x86
       run: |
         make generic LUA_A=liblua.dll LUA_SO=
-        cp liblua.dll ../../
+        cp liblua.dll ../../lua54.dll
       working-directory: ./build-lua/src
     
     - name: Build x86_64
       run: |
         make generic LUA_A=liblua_x86_64.dll LUA_SO=
-        cp liblua_x86_64.dll ../../
+        cp liblua_x86_64.dll ../../lua54_x86_64.dll
       working-directory: ./build-lua/src
     
     - name: Build arm64
       run: |
         make generic LUA_A=liblua_arm64.so LUA_SO=
-        cp liblua_arm64.so ../../
+        cp liblua_arm64.so ../../lua54_arm64.so
+      working-directory: ./build-lua/src
+    
+    - name: Build macOS
+      run: |
+        make macosx LUA_A=liblua.dylib LUA_SO=liblua.so
+        cp liblua.dylib ../../liblua54.dylib
+        cp liblua.so ../../lua54.so
+      working-directory: ./build-lua/src
+    
+    - name: Build Linux
+      run: |
+        make linux LUA_A=liblua.so LUA_SO=
+        cp liblua.so ../../lua54.so
       working-directory: ./build-lua/src
     
     - name: Upload Artifacts
@@ -42,6 +55,8 @@ jobs:
       with:
         name: lua_build
         path: |
-          liblua.dll
-          liblua_x86_64.dll
-          liblua_arm64.so
+          lua54.dll
+          lua54_x86_64.dll
+          lua54_arm64.so
+          lua54.dylib
+          lua54.so
