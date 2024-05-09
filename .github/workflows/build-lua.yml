@@ -1,4 +1,4 @@
-name: Build Lua C API
+name: Build Lua
 
 on:
   push:
@@ -21,44 +21,38 @@ jobs:
       
     - name: Build x86
       run: |
-        cd build-lua/src
         make generic && mv liblua.a liblua_x86.a
-        cp liblua_x86.a ../../../
+        cp liblua_x86.a ../
       working-directory: ./build-lua/src
     
     - name: Build x86_64
       run: |
-        cd build-lua/src
         make generic && mv liblua.a liblua_x86_64.a
-        cp liblua_x86_64.a ../../../
+        cp liblua_x86_64.a ../
       working-directory: ./build-lua/src
     
     - name: Build iOS
       run: |
-        cd build-lua/src
         make ios && mv liblua.a liblua_ios.a
-        cp liblua_ios.a ../../../
+        cp liblua_ios.a ../
       working-directory: ./build-lua/src
     
     - name: Build Android
       run: |
-        cd build-lua/src
         make android && mv liblua.so liblua_android.so
-        cp liblua_android.so ../../../
+        cp liblua_android.so ../
       working-directory: ./build-lua/src
     
     - name: Build WebGL
       run: |
-        cd build-lua/src
         make generic && mv liblua.a liblua_webgl.a
-        cp liblua_webgl.a ../../../
+        cp liblua_webgl.a ../
       working-directory: ./build-lua/src
     
     - name: Build arm64
       run: |
-        cd build-lua/src
         make generic && mv liblua.a liblua_arm64.a
-        cp liblua_arm64.a ../../../
+        cp liblua_arm64.a ../
       working-directory: ./build-lua/src
     
     - name: Upload Artifacts
