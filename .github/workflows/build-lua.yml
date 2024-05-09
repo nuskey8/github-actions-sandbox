@@ -24,42 +24,42 @@ jobs:
         cd .lua-build/src
         make generic && mv liblua.a liblua_x86.a
         cp liblua_x86.a ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Build x86_64
       run: |
         cd .lua-build/src
         make generic && mv liblua.a liblua_x86_64.a
         cp liblua_x86_64.a ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Build iOS
       run: |
         cd .lua-build/src
         make ios && mv liblua.a liblua_ios.a
         cp liblua_ios.a ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Build Android
       run: |
         cd .lua-build/src
         make android && mv liblua.so liblua_android.so
         cp liblua_android.so ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Build WebGL
       run: |
         cd .lua-build/src
         make generic && mv liblua.a liblua_webgl.a
         cp liblua_webgl.a ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Build arm64
       run: |
         cd .lua-build/src
         make generic && mv liblua.a liblua_arm64.a
         cp liblua_arm64.a ../../
-      working-directory: ./.lua-build/src
+      working-directory: .lua-build/src
     
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
