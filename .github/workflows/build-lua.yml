@@ -42,9 +42,9 @@ jobs:
       with:
         name: lua_build
         path: |
-          liblua_x86.a
-          liblua_x86_64.a
-          liblua_ios.a
-          liblua_android.so
-          liblua_webgl.a
-          liblua_arm64.a
+          build-lua/liblua_x86.a
+          build-lua/liblua_x86_64.a
+          build-lua/liblua_ios.a
+          build-lua/liblua_android.so
+          build-lua/liblua_webgl.a
+          build-lua/liblua_arm64.a
