@@ -21,20 +21,23 @@ jobs:
       
     - name: Build x86
       run: |
-        make generic && mv liblua.a liblua_x86.a
-        cp liblua_x86.a ../
+        cd build-lua/src
+        make generic LUA_A=liblua.dll LUA_SO=
+        cp liblua.dll ../../
       working-directory: ./build-lua/src
     
     - name: Build x86_64
       run: |
-        make generic && mv liblua.a liblua_x86_64.a
-        cp liblua_x86_64.a ../
+        cd build-lua/src
+        make generic LUA_A=liblua_x86_64.dll LUA_SO=
+        cp liblua_x86_64.dll ../../
       working-directory: ./build-lua/src
     
     - name: Build arm64
       run: |
-        make generic && mv liblua.a liblua_arm64.a
-        cp liblua_arm64.a ../
+        cd build-lua/src
+        make generic LUA_A=liblua_arm64.so LUA_SO=
+        cp liblua_arm64.so ../../
       working-directory: ./build-lua/src
     
     - name: Upload Artifacts
@@ -42,9 +45,6 @@ jobs:
       with:
         name: lua_build
         path: |
-          build-lua/liblua_x86.a
-          build-lua/liblua_x86_64.a
-          build-lua/liblua_ios.a
-          build-lua/liblua_android.so
-          build-lua/liblua_webgl.a
-          build-lua/liblua_arm64.a
+          liblua.dll
+          liblua_x86_64.dll
+          liblua_arm64.so
