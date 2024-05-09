@@ -31,24 +31,6 @@ jobs:
         cp liblua_x86_64.a ../
       working-directory: ./build-lua/src
     
-    - name: Build iOS
-      run: |
-        make ios && mv liblua.a liblua_ios.a
-        cp liblua_ios.a ../
-      working-directory: ./build-lua/src
-    
-    - name: Build Android
-      run: |
-        make android && mv liblua.so liblua_android.so
-        cp liblua_android.so ../
-      working-directory: ./build-lua/src
-    
-    - name: Build WebGL
-      run: |
-        make generic && mv liblua.a liblua_webgl.a
-        cp liblua_webgl.a ../
-      working-directory: ./build-lua/src
-    
     - name: Build arm64
       run: |
         make generic && mv liblua.a liblua_arm64.a
