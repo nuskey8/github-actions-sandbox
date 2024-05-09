@@ -19,44 +19,32 @@ jobs:
     - name: Install Build Tools
       run: sudo apt-get update && sudo apt-get install -y build-essential cmake
       
-    - name: Build x86
+    - name: Build x86_64 (Linux)
       run: |
-        make generic LUA_A=liblua.dll LUA_SO=
-        cp liblua.dll ../../lua54.dll
-      working-directory: ./build-lua/src
+        make -C build-lua/src generic LUA_A=lua54_x86_64.so LUA_SO=
+        cp build-lua/src/lua54_x86_64.so .
     
-    - name: Build x86_64
+    - name: Build arm64 (Linux)
       run: |
-        make generic LUA_A=liblua_x86_64.dll LUA_SO=
-        cp liblua_x86_64.dll ../../lua54_x86_64.dll
-      working-directory: ./build-lua/src
+        make -C build-lua/src generic LUA_A=lua54_arm64.so LUA_SO=
+        cp build-lua/src/lua54_arm64.so .
     
-    - name: Build arm64
+    - name: Build x86_64 (macOS)
       run: |
-        make generic LUA_A=liblua_arm64.so LUA_SO=
-        cp liblua_arm64.so ../../lua54_arm64.so
-      working-directory: ./build-lua/src
+        make -C build-lua/src generic LUA_A=lua54_x86_64.dylib LUA_SO=
+        cp build-lua/src/lua54_x86_64.dylib .
     
-    - name: Build macOS
+    - name: Build arm64 (macOS)
       run: |
-        make macosx LUA_A=liblua.dylib LUA_SO=liblua.so
-        cp liblua.dylib ../../liblua54.dylib
-        cp liblua.so ../../lua54.so
-      working-directory: ./build-lua/src
-    
-    - name: Build Linux
-      run: |
-        make linux LUA_A=liblua.so LUA_SO=
-        cp liblua.so ../../lua54.so
-      working-directory: ./build-lua/src
+        make -C build-lua/src generic LUA_A=lua54_arm64.dylib LUA_SO=
+        cp build-lua/src/lua54_arm64.dylib .
     
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: lua_build
-        path: |
-          lua54.dll
-          lua54_x86_64.dll
-          lua54_arm64.so
-          lua54.dylib
-          lua54.so
+        path: 
+          - lua54_x86_64.so
+          - lua54_arm64.so
+          - lua54_x86_64.dylib
+          - lua54_arm64.dylib
