@@ -43,8 +43,8 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: lua_build
-        path: 
-          - lua54_x86_64.so
-          - lua54_arm64.so
-          - lua54_x86_64.dylib
-          - lua54_arm64.dylib
+        path: |
+          lua54_x86_64.so
+          lua54_arm64.so
+          lua54_x86_64.dylib
+          lua54_arm64.dylib
