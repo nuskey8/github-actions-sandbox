@@ -1,50 +1,34 @@
-name: Build Lua
+name: Build Lua for macOS
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    runs-on: macos-latest
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
       
-    - name: Install Build Tools
-      run: sudo apt-get update && sudo apt-get install -y build-essential cmake
-      
-    - name: Build x86_64 (Linux)
+    - name: Setup
       run: |
-        make -C build-lua/src generic LUA_A=lua54_x86_64.so LUA_SO=
-        cp build-lua/src/lua54_x86_64.so .
-    
-    - name: Build arm64 (Linux)
+        brew update
+        brew install cmake
+        
+    - name: Build MacOS (Intel)
       run: |
-        make -C build-lua/src generic LUA_A=lua54_arm64.so LUA_SO=
-        cp build-lua/src/lua54_arm64.so .
-    
-    - name: Build x86_64 (macOS)
-      run: |
-        make -C build-lua/src generic LUA_A=lua54_x86_64.dylib LUA_SO=
-        cp build-lua/src/lua54_x86_64.dylib .
-    
-    - name: Build arm64 (macOS)
-      run: |
-        make -C build-lua/src generic LUA_A=lua54_arm64.dylib LUA_SO=
-        cp build-lua/src/lua54_arm64.dylib .
-    
-    - name: Upload Artifacts
+        cd build-lua
+        mkdir build_osx_intel
+        cd build_osx_intel
+        cmake -G Xcode ..
+        xcodebuild -project lua.xcodeproj -scheme lua build
+        
+    - name: Upload
       uses: actions/upload-artifact@v2
       with:
-        name: lua_build
+        name: lua_plugins
         path: |
-          lua54_x86_64.so
-          lua54_arm64.so
-          lua54_x86_64.dylib
-          lua54_arm64.dylib
+          build-lua/src/build_osx_intel
