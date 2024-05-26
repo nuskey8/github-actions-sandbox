@@ -28,10 +28,25 @@ jobs:
       with:
         luaVersion: '5.4'
 
-    - name: Set up CMake
-      uses: lukka/get-cmake@latest
-      with:
-        cmakeVersion: '3.20.5'
+    - name: Install CMake on Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget https://github.com/Kitware/CMake/releases/download/v3.20.5/cmake-3.20.5-linux-x86_64.sh
+        sudo mkdir /opt/cmake
+        sudo sh cmake-3.20.5-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+        sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+
+    - name: Install CMake on macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake
+
+    - name: Install CMake on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' --yes
 
     - name: Set up architecture
       if: matrix.os == 'macos-latest'
