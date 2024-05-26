@@ -1,77 +1,78 @@
-name: Build Lua Plugins
+name: Build Lua
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: macos-latest
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
+        arch: [x86_64, arm64]
 
     steps:
-    - name: Checkout repository
+    - name: Checkout Repository
       uses: actions/checkout@v2
+      
+    - name: Install Build Tools
+      run: sudo apt-get update && sudo apt-get install -y build-essential cmake
 
-    - name: Install Lua on macOS
-      if: matrix.os == 'macos-latest'
+    - name: Build for ${{ matrix.arch }}
       run: |
-        brew install lua
+        if [ "${{ matrix.arch }}" == "x86_64" ]; then
+          make -C build-lua/src generic LUA_A=lua54_x86_64.so LUA_SO=
+          cp build-lua/src/lua54_x86_64.so .
+        else
+          make -C build-lua/src generic LUA_A=lua54_arm64.so LUA_SO=
+          cp build-lua/src/lua54_arm64.so .
+        fi
+    
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: lua_build_${{ matrix.arch }}_linux
+        path: |
+          lua54_x86_64.so
+          lua54_arm64.so
 
-    - name: Install Lua on Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        choco install lua
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
 
-    - name: Install Lua on Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lua5.4
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Install Build Tools
+      run: brew install cmake
 
     - name: Set up architecture
-      if: matrix.os == 'macos-latest'
       run: |
         if [ "${{ matrix.arch }}" == "arm64" ]; then
-          sudo softwareupdate --install-rosetta --agree-to-license
+          sudo softwareupdate --install-rosetta --agree-to-license || true
         fi
 
-    - name: Build on macOS
-      if: matrix.os == 'macos-latest'
+    - name: Build for ${{ matrix.arch }}
       run: |
-        mkdir -p build
-        cd build
-        cmake -DARCH=${{ matrix.arch }} ..
-        make
+        if [ "${{ matrix.arch }}" == "x86_64" ]; then
+          make -C build-lua/src generic LUA_A=lua54_x86_64.bundle LUA_SO=
+          cp build-lua/src/lua54_x86_64.bundle .
+        else
+          make -C build-lua/src generic LUA_A=lua54_arm64.bundle LUA_SO=
+          cp build-lua/src/lua54_arm64.bundle .
+        fi
 
-    - name: Build on Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        mkdir build
-        cd build
-        cmake -G "MinGW Makefiles" ..
-        mingw32-make
-
-    - name: Build on Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        mkdir -p build
-        cd build
-        cmake ..
-        make
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
       with:
-        name: build-${{ matrix.os }}-${{ matrix.arch }}
-        path: build
+        name: lua_build_${{ matrix.arch }}_macos
+        path: |
+          lua54_x86_64.bundle
+          lua54_arm64.bundle
