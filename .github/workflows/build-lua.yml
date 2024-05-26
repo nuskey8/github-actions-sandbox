@@ -1,34 +1,71 @@
-name: Build Lua for macOS
+name: Build Lua Plugins
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: macos-latest
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: macos-latest
+            arch: x86_64
+          - os: macos-latest
+            arch: arm64
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout repository
       uses: actions/checkout@v2
-      
-    - name: Setup
-      run: |
-        brew update
-        brew install cmake
-        
-    - name: Build MacOS (Intel)
-      run: |
-        cd build-lua
-        mkdir build_osx_intel
-        cd build_osx_intel
-        cmake -G Xcode ..
-        xcodebuild -project lua.xcodeproj -scheme lua build
-        
-    - name: Upload
-      uses: actions/upload-artifact@v2
+
+    - name: Set up Lua
+      uses: Leafo/gh-actions-lua@v8
       with:
-        name: lua_plugins
-        path: |
-          build-lua/src/build_osx_intel
+        luaVersion: '5.4'
+
+    - name: Set up CMake
+      uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: '3.20.5'
+
+    - name: Set up architecture
+      if: matrix.os == 'macos-latest'
+      run: |
+        if [ "${{ matrix.arch }}" == "arm64" ]; then
+          sudo softwareupdate --install-rosetta --agree-to-license
+        fi
+
+    - name: Build on macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DARCH=${{ matrix.arch }} ..
+        make
+
+    - name: Build on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir build
+        cd build
+        cmake -G "MinGW Makefiles" ..
+        mingw32-make
+
+    - name: Build on Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
+        make
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-${{ matrix.os }}-${{ matrix.arch }}
+        path: build
