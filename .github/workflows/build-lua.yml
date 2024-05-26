@@ -62,11 +62,11 @@ jobs:
     - name: Build for ${{ matrix.arch }}
       run: |
         if [ "${{ matrix.arch }}" == "x86_64" ]; then
-          make -C build-lua/src generic LUA_A=lua54_x86_64.bundle LUA_SO=
-          cp build-lua/src/lua54_x86_64.bundle .
+          make -C build-lua/src generic LUA_A=lua54_x86_64.dylib LUA_SO=
+          cp build-lua/src/lua54_x86_64.dylib .
         else
-          make -C build-lua/src generic LUA_A=lua54_arm64.bundle LUA_SO=
-          cp build-lua/src/lua54_arm64.bundle .
+          make -C build-lua/src generic LUA_A=lua54_arm64.dylib LUA_SO=
+          cp build-lua/src/lua54_arm64.dylib .
         fi
 
     - name: Upload Artifacts
@@ -74,5 +74,5 @@ jobs:
       with:
         name: lua_build_${{ matrix.arch }}_macos
         path: |
-          lua54_x86_64.bundle
-          lua54_arm64.bundle
+          lua54_x86_64.dylib
+          lua54_arm64.dylib
