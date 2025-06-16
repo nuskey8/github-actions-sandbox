@@ -88,6 +88,14 @@ jobs:
       - name: Install MinGW-w64 (32bit)
         if: matrix.target == 'i686-pc-windows-gnu'
         run: choco install mingw --version=11.2.0 --x86 --force
+      
+      - name: Set up Emscripten
+        if: matrix.target == 'wasm32-unknown-unknown'
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Set up Android SDK & NDK
+        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
+        uses: android-actions/setup-android@v3
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1

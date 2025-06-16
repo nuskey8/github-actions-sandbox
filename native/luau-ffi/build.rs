@@ -50,22 +50,72 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
         config.define("CMAKE_OSX_ARCHITECTURES", "x86_64");
         config.define("CMAKE_OSX_SYSROOT", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk");
-        config.define("CMAKE_C_FLAGS", "-fPIC -m64 --target=x86_64-apple-ios-simulator -mios-simulator-version-min=17.5");
-        config.define("CMAKE_CXX_FLAGS", "-fPIC -m64 --target=x86_64-apple-ios-simulator -mios-simulator-version-min=17.5");
+        config.define(
+            "CMAKE_C_FLAGS",
+            "-fPIC -m64 --target=x86_64-apple-ios-simulator -mios-simulator-version-min=17.5",
+        );
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-fPIC -m64 --target=x86_64-apple-ios-simulator -mios-simulator-version-min=17.5",
+        );
     } else if target == "aarch64-apple-ios" {
         config.define("CMAKE_SYSTEM_NAME", "iOS");
         config.define("CMAKE_SYSTEM_PROCESSOR", "arm64");
         config.define("CMAKE_OSX_ARCHITECTURES", "arm64");
         config.define("CMAKE_OSX_SYSROOT", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk");
-        config.define("CMAKE_C_FLAGS", "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5");
-        config.define("CMAKE_CXX_FLAGS", "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5");
+        config.define(
+            "CMAKE_C_FLAGS",
+            "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
+        );
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
+        );
     } else if target == "i686-pc-windows-gnu" {
         config.define("CMAKE_SYSTEM_NAME", "Windows");
         config.define("CMAKE_SYSTEM_PROCESSOR", "X86");
         config.define("CMAKE_C_COMPILER", "C:/tools/mingw32/bin/gcc.exe");
         config.define("CMAKE_CXX_COMPILER", "C:/tools/mingw32/bin/g++.exe");
         config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -m32");
-        config.define("CMAKE_CXX_FLAGS", "-ffunction-sections -fdata-sections -m32");
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-ffunction-sections -fdata-sections -m32",
+        );
+    } else if target == "wasm32-unknown-unknown" {
+        config.define("CMAKE_SYSTEM_NAME", "Emscripten");
+        config.define("CMAKE_C_COMPILER", "emcc");
+        config.define("CMAKE_CXX_COMPILER", "em++");
+        config.define("CMAKE_AR", "emar");
+        config.define("CMAKE_RANLIB", "emranlib");
+        config.define("CMAKE_C_FLAGS", "-fPIC");
+        config.define("CMAKE_CXX_FLAGS", "-fPIC");
+    } else if target == "aarch64-linux-android" {
+        let ndk_home = std::env::var("ANDROID_NDK_HOME")
+            .unwrap_or_else(|_| "/usr/local/lib/android/sdk/ndk/27.2.12479018".to_string());
+        let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);
+        config.define("CMAKE_SYSTEM_NAME", "Android");
+        config.define("CMAKE_SYSTEM_PROCESSOR", "aarch64");
+        config.define("CMAKE_ANDROID_ARCH_ABI", "arm64-v8a");
+        config.define("CMAKE_ANDROID_NDK", &ndk_home);
+        config.define("CMAKE_ANDROID_STL_TYPE", "c++_static");
+        config.define("CMAKE_ANDROID_API", "16");
+        config.define(
+            "CMAKE_C_COMPILER",
+            format!("{}/aarch64-linux-android16-clang", ndk_bin),
+        );
+        config.define(
+            "CMAKE_CXX_COMPILER",
+            format!("{}/aarch64-linux-android16-clang++", ndk_bin),
+        );
+        config.define(
+            "CMAKE_C_FLAGS",
+            "-DANDROID -ffunction-sections -fdata-sections -fPIC",
+        );
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-DANDROID -ffunction-sections -fdata-sections -fPIC",
+        );
     }
+
     config
 }
