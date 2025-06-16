@@ -11,6 +11,7 @@ crate-type = ["dylib"]
 
 [build-dependencies]
 bindgen = "0.71.1"
+build-target = "0.7.0"
 cc = "1.2.22"
 cmake = "0.1.54"
 csbindgen = "1.9.3"
