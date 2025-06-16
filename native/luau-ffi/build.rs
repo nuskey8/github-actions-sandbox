@@ -38,6 +38,11 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_SYSTEM_PROCESSOR", "aarch64");
         config.define("CMAKE_C_COMPILER", "aarch64-linux-gnu-gcc");
         config.define("CMAKE_CXX_COMPILER", "aarch64-linux-gnu-g++");
+        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -fPIC");
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-ffunction-sections -fdata-sections -fPIC",
+        );
     } else if target == "i686-unknown-linux-gnu" {
         config.define("CMAKE_SYSTEM_NAME", "Linux");
         config.define("CMAKE_SYSTEM_PROCESSOR", "x86");
@@ -72,10 +77,11 @@ fn new_cmake_config() -> cmake::Config {
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
         );
     } else if target == "i686-pc-windows-gnu" {
+        let mingw32 = r"C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin";
         config.define("CMAKE_SYSTEM_NAME", "Windows");
         config.define("CMAKE_SYSTEM_PROCESSOR", "X86");
-        config.define("CMAKE_C_COMPILER", "C:/tools/mingw32/bin/gcc.exe");
-        config.define("CMAKE_CXX_COMPILER", "C:/tools/mingw32/bin/g++.exe");
+        config.define("CMAKE_C_COMPILER", format!(r"{}\gcc.exe", mingw32));
+        config.define("CMAKE_CXX_COMPILER", format!(r"{}\g++.exe", mingw32));
         config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -m32");
         config.define(
             "CMAKE_CXX_FLAGS",
@@ -98,14 +104,14 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_ANDROID_ARCH_ABI", "arm64-v8a");
         config.define("CMAKE_ANDROID_NDK", &ndk_home);
         config.define("CMAKE_ANDROID_STL_TYPE", "c++_static");
-        config.define("CMAKE_ANDROID_API", "16");
+        config.define("CMAKE_ANDROID_API", "27");
         config.define(
             "CMAKE_C_COMPILER",
-            format!("{}/aarch64-linux-android16-clang", ndk_bin),
+            format!("{}/aarch64-linux-android27-clang", ndk_bin),
         );
         config.define(
             "CMAKE_CXX_COMPILER",
-            format!("{}/aarch64-linux-android16-clang++", ndk_bin),
+            format!("{}/aarch64-linux-android27-clang++", ndk_bin),
         );
         config.define(
             "CMAKE_C_FLAGS",

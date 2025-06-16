@@ -87,7 +87,7 @@ jobs:
 
       - name: Install MinGW-w64 (32bit)
         if: matrix.target == 'i686-pc-windows-gnu'
-        run: choco install mingw --version=11.2.0 --x86 --force
+        run: choco install mingw --x86 --force
       
       - name: Set up Emscripten
         if: matrix.target == 'wasm32-unknown-unknown'
@@ -96,15 +96,17 @@ jobs:
       - name: Set up Android SDK & NDK
         if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
         uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 27.0
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1
 
-      - name: Install Ninja
+      - name: Install Ninja and Make
         if: runner.os != 'Windows'
         run: |
           sudo apt-get update || true
-          sudo apt-get install -y ninja-build || brew install ninja || true
+          sudo apt-get install -y ninja-build make || brew install ninja || true
       
       - name: Build luau-ffi
         working-directory: native/luau-ffi
