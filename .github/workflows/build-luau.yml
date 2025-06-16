@@ -33,7 +33,7 @@ jobs:
             target: aarch64-linux-android
           - os: ubuntu-latest
             target: x86_64-linux-android
-          # iOS (arm64/simulator)
+          # iOS (arm64/x86_64)
           - os: macos-latest
             target: aarch64-apple-ios
           - os: macos-latest
