@@ -28,8 +28,6 @@ jobs:
             target: x86_64-pc-windows-gnu
           - os: windows-latest
             target: i686-pc-windows-gnu
-          - os: windows-latest
-            target: aarch64-pc-windows-gnu
           # Android (arm64/x86_64)
           - os: ubuntu-latest
             target: aarch64-linux-android
@@ -86,6 +84,10 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib libc6-dev-i386 libstdc++6:i386
+
+      - name: Install MinGW-w64 (32bit)
+        if: matrix.target == 'i686-pc-windows-gnu'
+        run: choco install mingw --version=11.2.0 --x86 --force
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1

@@ -59,6 +59,13 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_OSX_SYSROOT", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk");
         config.define("CMAKE_C_FLAGS", "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5");
         config.define("CMAKE_CXX_FLAGS", "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5");
+    } else if target == "i686-pc-windows-gnu" {
+        config.define("CMAKE_SYSTEM_NAME", "Windows");
+        config.define("CMAKE_SYSTEM_PROCESSOR", "X86");
+        config.define("CMAKE_C_COMPILER", "C:/tools/mingw32/bin/gcc.exe");
+        config.define("CMAKE_CXX_COMPILER", "C:/tools/mingw32/bin/g++.exe");
+        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -m32");
+        config.define("CMAKE_CXX_FLAGS", "-ffunction-sections -fdata-sections -m32");
     }
     config
 }

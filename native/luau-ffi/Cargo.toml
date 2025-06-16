@@ -5,10 +5,7 @@ edition = "2021"
 
 [lib]
 name = "luau"
-crate-type = ["dylib"]
-
-[target.'cfg(target_arch = "wasm32")'.lib]
-crate-type = ["staticlib"]
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
 
