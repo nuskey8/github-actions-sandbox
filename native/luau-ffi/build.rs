@@ -96,22 +96,21 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_C_FLAGS", "-fPIC");
         config.define("CMAKE_CXX_FLAGS", "-fPIC");
     } else if target == "aarch64-linux-android" {
-        let ndk_home = std::env::var("ANDROID_NDK_HOME")
-            .unwrap_or_else(|_| "/usr/local/lib/android/sdk/ndk/27.2.12479018".to_string());
+        let ndk_home = std::env::var("ANDROID_NDK_HOME").unwrap();
         let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);
         config.define("CMAKE_SYSTEM_NAME", "Android");
         config.define("CMAKE_SYSTEM_PROCESSOR", "aarch64");
         config.define("CMAKE_ANDROID_ARCH_ABI", "arm64-v8a");
         config.define("CMAKE_ANDROID_NDK", &ndk_home);
         config.define("CMAKE_ANDROID_STL_TYPE", "c++_static");
-        config.define("CMAKE_ANDROID_API", "27");
+        config.define("CMAKE_ANDROID_API", "26");
         config.define(
             "CMAKE_C_COMPILER",
-            format!("{}/aarch64-linux-android27-clang", ndk_bin),
+            format!("{}/aarch64-linux-android26-clang", ndk_bin),
         );
         config.define(
             "CMAKE_CXX_COMPILER",
-            format!("{}/aarch64-linux-android27-clang++", ndk_bin),
+            format!("{}/aarch64-linux-android26-clang++", ndk_bin),
         );
         config.define(
             "CMAKE_C_FLAGS",
