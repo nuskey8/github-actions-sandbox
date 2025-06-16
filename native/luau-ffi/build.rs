@@ -120,6 +120,31 @@ fn new_cmake_config() -> cmake::Config {
             "CMAKE_CXX_FLAGS",
             "-DANDROID -ffunction-sections -fdata-sections -fPIC",
         );
+    } else if target == "x86_64-linux-android" {
+        let ndk_home = std::env::var("ANDROID_NDK_HOME").unwrap();
+        let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);
+        config.define("CMAKE_SYSTEM_NAME", "Android");
+        config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
+        config.define("CMAKE_ANDROID_ARCH_ABI", "x86_64");
+        config.define("CMAKE_ANDROID_NDK", &ndk_home);
+        config.define("CMAKE_ANDROID_STL_TYPE", "c++_static");
+        config.define("CMAKE_ANDROID_API", "26");
+        config.define(
+            "CMAKE_C_COMPILER",
+            format!("{}/x86_64-linux-android26-clang", ndk_bin),
+        );
+        config.define(
+            "CMAKE_CXX_COMPILER",
+            format!("{}/x86_64-linux-android26-clang++", ndk_bin),
+        );
+        config.define(
+            "CMAKE_C_FLAGS",
+            "-DANDROID -ffunction-sections -fdata-sections -fPIC -m64",
+        );
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-DANDROID -ffunction-sections -fdata-sections -fPIC -m64",
+        );
     }
 
     config

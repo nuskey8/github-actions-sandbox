@@ -21,7 +21,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: ubuntu-latest
             target: i686-unknown-linux-gnu
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
           # Windows (x64/x86/arm64)
           - os: windows-latest
@@ -73,7 +73,7 @@ jobs:
           sudo apt-get install -y libc++-dev libc++abi-dev
 
       - name: Install cross compilers for Linux ARM64
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        if: matrix.target == 'aarch64-unknown-linux-gnu' && runner.os != 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
@@ -112,8 +112,8 @@ jobs:
         working-directory: native/luau-ffi
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
-          CC: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc' || '' }}
-          CXX: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-g++' || '' }}
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
         run: |
           cargo build --release --target ${{ matrix.target }}
 
