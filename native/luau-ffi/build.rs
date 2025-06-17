@@ -14,7 +14,7 @@ fn main() {
     let target = build_target::target_triple().unwrap();
     if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
-    } else if target == "wasm32-unknown-unknown" {
+    } else if target == "wasm32-unknown-emscripten" {
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -52,7 +52,6 @@ fn main() {
         .unwrap()
         .write_to_file("src/luau_require.rs")
         .unwrap();
-
 }
 
 fn new_cmake_config() -> cmake::Config {
@@ -104,12 +103,19 @@ fn new_cmake_config() -> cmake::Config {
             "CMAKE_CXX_FLAGS",
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
         );
-    } else if target == "wasm32-unknown-unknown" {
-        let emsdk_path = std::env::var("EMSDK").unwrap_or_else(|_| "/home/runner/work/_temp/emsdk-main".to_string());
+    } else if target == "wasm32-unknown-emscripten" {
+        let emsdk_path = std::env::var("EMSDK")
+            .unwrap_or_else(|_| "/home/runner/work/_temp/emsdk-main".to_string());
         let emscripten_path = format!("{}/upstream/emscripten", emsdk_path);
-        
+
         config.define("CMAKE_SYSTEM_NAME", "Emscripten");
-        config.define("CMAKE_TOOLCHAIN_FILE", format!("{}/cmake/Modules/Platform/Emscripten.cmake", emscripten_path));
+        config.define(
+            "CMAKE_TOOLCHAIN_FILE",
+            format!(
+                "{}/cmake/Modules/Platform/Emscripten.cmake",
+                emscripten_path
+            ),
+        );
         config.define("CMAKE_C_COMPILER", "emcc");
         config.define("CMAKE_CXX_COMPILER", "em++");
         config.define("CMAKE_AR", "emar");

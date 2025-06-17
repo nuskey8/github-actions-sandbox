@@ -36,7 +36,7 @@ jobs:
             target: x86_64-apple-ios
           # WebAssembly
           - os: ubuntu-latest
-            target: wasm32-unknown-unknown
+            target: wasm32-unknown-emscripten
 
     steps:
       - name: Checkout repository
@@ -50,7 +50,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Set up toolchains
-        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android' || startsWith(matrix.target, 'aarch64-apple-ios') || startsWith(matrix.target, 'x86_64-apple-ios') || matrix.target == 'wasm32-unknown-unknown' || matrix.target == 'aarch64-unknown-linux-gnu'
+        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android' || startsWith(matrix.target, 'aarch64-apple-ios') || startsWith(matrix.target, 'x86_64-apple-ios') || matrix.target == 'wasm32-unknown-emscripten' || matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update || true
           sudo apt-get install -y gcc-multilib g++-multilib || true
@@ -58,8 +58,8 @@ jobs:
             rustup target add ${{ matrix.target }}
             sudo apt-get install -y libc6-dev-i386
           fi
-          if [[ "${{ matrix.target }}" == "wasm32-unknown-unknown" ]]; then
-            rustup target add wasm32-unknown-unknown
+          if [[ "${{ matrix.target }}" == "wasm32-unknown-emscripten" ]]; then
+            rustup target add wasm32-unknown-emscripten
           fi
           if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
             rustup target add aarch64-unknown-linux-gnu
@@ -83,7 +83,8 @@ jobs:
           version: 12.2.0
 
       - name: Set up Emscripten
-        if: matrix.target == 'wasm32-unknown-unknown'
+        id: setup-emsdk
+        if: matrix.target == 'wasm32-unknown-emscripten'
         uses: mymindstorm/setup-emsdk@v14
 
       - name: Set up Android SDK & NDK
