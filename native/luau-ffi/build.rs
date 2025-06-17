@@ -33,13 +33,14 @@ fn new_cmake_config() -> cmake::Config {
 
     let target = build_target::target_triple().unwrap();
 
-    if target == "i686-unknown-linux-gnu" {
+    if target == "aarch64-unknown-linux-gnu" {
         config.define("CMAKE_SYSTEM_NAME", "Linux");
-        config.define("CMAKE_SYSTEM_PROCESSOR", "x86");
-        config.define("CMAKE_C_COMPILER", "gcc");
-        config.define("CMAKE_CXX_COMPILER", "g++");
-        config.define("CMAKE_C_FLAGS", "-m32");
-        config.define("CMAKE_CXX_FLAGS", "-m32");
+        config.define("CMAKE_SYSTEM_PROCESSOR", "aarch64");
+        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -fPIC");
+        config.define(
+            "CMAKE_CXX_FLAGS",
+            "-ffunction-sections -fdata-sections -fPIC",
+        );
     } else if target == "x86_64-apple-ios" {
         config.define("CMAKE_SYSTEM_NAME", "iOS");
         config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
