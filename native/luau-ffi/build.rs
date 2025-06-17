@@ -15,6 +15,8 @@ fn main() {
     if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     } else if target == "wasm32-unknown-emscripten" {
+        println!("cargo:rustc-link-arg=-s");
+        println!("cargo:rustc-link-arg=SIDE_MODULE=1");
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -124,6 +126,8 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_CXX_FLAGS", "-fPIC");
         config.define("CMAKE_BUILD_TYPE", "Release");
         config.define("CMAKE_VERBOSE_MAKEFILE", "ON");
+        config.define("CMAKE_POSITION_INDEPENDENT_CODE", "ON");
+        config.define("CMAKE_SHARED_LINKER_FLAGS", "-s SIDE_MODULE=1");
     } else if target == "aarch64-linux-android" {
         let ndk_home = std::env::var("ANDROID_NDK_HOME").unwrap();
         let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);

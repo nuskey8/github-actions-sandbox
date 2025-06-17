@@ -87,6 +87,14 @@ jobs:
         if: matrix.target == 'wasm32-unknown-emscripten'
         uses: mymindstorm/setup-emsdk@v14
 
+      - name: Set up Environment Variables for Emscripten
+        if: matrix.target == 'wasm32-unknown-emscripten'
+        run: |
+          echo "EMSDK=${{ steps.setup-emsdk.outputs.emsdk_path }}" >> $GITHUB_ENV
+          echo "PATH=${{ steps.setup-emsdk.outputs.emsdk_path }}/upstream/emscripten:$PATH" >> $GITHUB_ENV
+          echo "PATH=${{ steps.setup-emsdk.outputs.emsdk_path }}/upstream/bin:$PATH" >> $GITHUB_ENV
+        shell: bash
+
       - name: Set up Android SDK & NDK
         id: setup-ndk
         if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
