@@ -82,15 +82,17 @@ fn new_cmake_config() -> cmake::Config {
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
         );
     } else if target == "wasm32-unknown-unknown" {
+        let emsdk_path = std::env::var("EMSDK").unwrap_or_else(|_| "/home/runner/work/_temp/emsdk-main".to_string());
+        let emscripten_path = format!("{}/upstream/emscripten", emsdk_path);
+        
         config.define("CMAKE_SYSTEM_NAME", "Emscripten");
+        config.define("CMAKE_TOOLCHAIN_FILE", format!("{}/cmake/Modules/Platform/Emscripten.cmake", emscripten_path));
         config.define("CMAKE_C_COMPILER", "emcc");
         config.define("CMAKE_CXX_COMPILER", "em++");
         config.define("CMAKE_AR", "emar");
         config.define("CMAKE_RANLIB", "emranlib");
         config.define("CMAKE_C_FLAGS", "-fPIC");
         config.define("CMAKE_CXX_FLAGS", "-fPIC");
-        config.define("CMAKE_EXE_LINKER_FLAGS", "-s WASM=1");
-        config.define("CMAKE_SHARED_LINKER_FLAGS", "-s WASM=1");
         config.define("CMAKE_BUILD_TYPE", "Release");
         config.define("CMAKE_VERBOSE_MAKEFILE", "ON");
     } else if target == "aarch64-linux-android" {
