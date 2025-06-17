@@ -79,6 +79,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
 
       - name: Set up Android SDK & NDK
+        id: setup-ndk
         if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
         uses: nttld/setup-ndk@v1
         with:
@@ -97,7 +98,7 @@ jobs:
         working-directory: native/luau-ffi
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
         run: |
           cargo build --release --target ${{ matrix.target }}
