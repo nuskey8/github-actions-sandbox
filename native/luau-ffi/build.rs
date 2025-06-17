@@ -106,12 +106,7 @@ fn new_cmake_config() -> cmake::Config {
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
         );
     } else if target == "wasm32-unknown-emscripten" {
-        let emsdk_path = std::env::var("EMSDK").unwrap();
-        let emscripten_path = format!("{}/upstream/emscripten", emsdk_path);
-        let toolchain_file = format!("{}/cmake/Modules/Platform/Emscripten.cmake", emscripten_path);
-        
         config.define("CMAKE_SYSTEM_NAME", "Emscripten");
-        config.define("CMAKE_TOOLCHAIN_FILE", toolchain_file);
         config.define("CMAKE_C_COMPILER", "emcc");
         config.define("CMAKE_CXX_COMPILER", "em++");
         config.define("CMAKE_AR", "emar");
