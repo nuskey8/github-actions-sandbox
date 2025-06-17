@@ -12,8 +12,9 @@ fn main() {
     println!("cargo:rustc-link-lib=static=Luau.Require");
 
     let target = build_target::target_triple().unwrap();
-    if target == "x86_64-pc-windows-gnu" {
+    if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
+    } else if target == "wasm32-unknown-unknown" {
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -24,10 +25,7 @@ fn main() {
             "../../luau/VM/include/lualib.h",
             "../../luau/Compiler/include/luacode.h",
         ])
-        .clang_arg(format!(
-            "--target={}",
-            target)
-        )
+        .clang_arg(format!("--target={}", target))
         .generate()
         .unwrap()
         .write_to_file("src/luau.rs")
@@ -89,8 +87,13 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_CXX_COMPILER", "em++");
         config.define("CMAKE_AR", "emar");
         config.define("CMAKE_RANLIB", "emranlib");
-        config.define("CMAKE_C_FLAGS", "-fPIC");
-        config.define("CMAKE_CXX_FLAGS", "-fPIC");
+        config.define("CMAKE_C_FLAGS", "-fPIC -s WASM=1");
+        config.define("CMAKE_CXX_FLAGS", "-fPIC -s WASM=1");
+        config.define("CMAKE_EXE_LINKER_FLAGS", "-s WASM=1");
+        config.define("CMAKE_SHARED_LINKER_FLAGS", "-s WASM=1");
+        config.define("CMAKE_STATIC_LINKER_FLAGS", "-s WASM=1");
+        config.define("CMAKE_BUILD_TYPE", "Release");
+        config.define("CMAKE_VERBOSE_MAKEFILE", "ON");
     } else if target == "aarch64-linux-android" {
         let ndk_home = std::env::var("ANDROID_NDK_HOME").unwrap();
         let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);
