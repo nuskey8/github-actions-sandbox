@@ -10,7 +10,13 @@ fn main() {
     println!("cargo:rustc-link-lib=static=Luau.Config");
     println!("cargo:rustc-link-lib=static=Luau.RequireNavigator");
     println!("cargo:rustc-link-lib=static=Luau.Require");
-    println!("cargo:rustc-link-lib=dylib=c++");
+
+    let target = build_target::target_triple().unwrap();
+    if target == "i686-pc-windows-gnu" || target == "x86_64-pc-windows-gnu" {
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+    } else {
+        println!("cargo:rustc-link-lib=dylib=c++");
+    }
 
     bindgen::Builder::default()
         .headers([
@@ -34,8 +40,6 @@ fn new_cmake_config() -> cmake::Config {
     let target = build_target::target_triple().unwrap();
 
     if target == "aarch64-unknown-linux-gnu" {
-        config.define("CMAKE_SYSTEM_NAME", "Linux");
-        config.define("CMAKE_SYSTEM_PROCESSOR", "aarch64");
         config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -fPIC");
         config.define(
             "CMAKE_CXX_FLAGS",
