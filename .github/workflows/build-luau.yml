@@ -72,7 +72,14 @@ jobs:
 
       - name: Install MinGW-w64 (32bit)
         if: matrix.target == 'i686-pc-windows-gnu'
-        run: choco install mingw --x86 --force
+        run: |
+          choco install mingw --x86 --force
+          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          dir C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\
+          C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\gcc.exe --version
+          C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\g++.exe --version
+        shell: pwsh
       
       - name: Set up Emscripten
         if: matrix.target == 'wasm32-unknown-unknown'
@@ -99,7 +106,7 @@ jobs:
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
         run: |
           cargo build --release --target ${{ matrix.target }}
 
