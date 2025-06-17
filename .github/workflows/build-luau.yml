@@ -52,7 +52,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Set up toolchains
-        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android' || startsWith(matrix.target, 'aarch64-apple-ios') || startsWith(matrix.target, 'x86_64-apple-ios') || matrix.target == 'wasm32-unknown-unknown'
+        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android' || startsWith(matrix.target, 'aarch64-apple-ios') || startsWith(matrix.target, 'x86_64-apple-ios') || matrix.target == 'wasm32-unknown-unknown' || matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update || true
           sudo apt-get install -y gcc-multilib g++-multilib || true
@@ -63,6 +63,10 @@ jobs:
           if [[ "${{ matrix.target }}" == "wasm32-unknown-unknown" ]]; then
             rustup target add wasm32-unknown-unknown
           fi
+          if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
+            rustup target add aarch64-unknown-linux-gnu
+            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          fi
 
       - name: Install libc++
         if: runner.os == 'Linux'
@@ -70,7 +74,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt-get install -y build-essential
-      
+
       - name: Set up MinGW
         id: mingw_setup
         if: matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu'
@@ -78,7 +82,7 @@ jobs:
         with:
           platform: ${{ matrix.target == 'i686-pc-windows-gnu' && 'x86' || 'x64' }}
           version: 12.2.0
-  
+
       - name: Set up Emscripten
         if: matrix.target == 'wasm32-unknown-unknown'
         uses: mymindstorm/setup-emsdk@v14
@@ -98,6 +102,15 @@ jobs:
           echo "PATH=${{ steps.setup-ndk.outputs.ndk-path}}/toolchains/x86_64-4.9/prebuilt/linux-x86_64/bin:$PATH" >> $GITHUB_ENV # Older NDKs might use this
         shell: bash
 
+      - name: Set up Environment Variables for ARM64
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CXX=aarch64-linux-gnu-g++" >> $GITHUB_ENV
+          echo "AR=aarch64-linux-gnu-ar" >> $GITHUB_ENV
+          echo "RANLIB=aarch64-linux-gnu-ranlib" >> $GITHUB_ENV
+        shell: bash
+
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1
 
@@ -106,15 +119,16 @@ jobs:
         run: |
           sudo apt-get update || true
           sudo apt-get install -y ninja-build make || brew install ninja || true
-      
+
       - name: Build luau-ffi
         working-directory: native/luau-ffi
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
-          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
           CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang
-          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gcc || '' }}
-          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gxx  || '' }}
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gcc || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc') || '' }}
+          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gxx || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-g++') || '' }}
           CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER: emcc
         run: |
           cargo build --release --target ${{ matrix.target }}
