@@ -87,11 +87,10 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_CXX_COMPILER", "em++");
         config.define("CMAKE_AR", "emar");
         config.define("CMAKE_RANLIB", "emranlib");
-        config.define("CMAKE_C_FLAGS", "-fPIC -s WASM=1");
-        config.define("CMAKE_CXX_FLAGS", "-fPIC -s WASM=1");
+        config.define("CMAKE_C_FLAGS", "-fPIC");
+        config.define("CMAKE_CXX_FLAGS", "-fPIC");
         config.define("CMAKE_EXE_LINKER_FLAGS", "-s WASM=1");
         config.define("CMAKE_SHARED_LINKER_FLAGS", "-s WASM=1");
-        config.define("CMAKE_STATIC_LINKER_FLAGS", "-s WASM=1");
         config.define("CMAKE_BUILD_TYPE", "Release");
         config.define("CMAKE_VERBOSE_MAKEFILE", "ON");
     } else if target == "aarch64-linux-android" {
