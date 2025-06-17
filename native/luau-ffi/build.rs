@@ -12,7 +12,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=Luau.Require");
 
     let target = build_target::target_triple().unwrap();
-    if target == "i686-pc-windows-gnu" || target == "x86_64-pc-windows-gnu" {
+    if target == "x86_64-pc-windows-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
@@ -26,8 +26,8 @@ fn main() {
         ])
         .clang_arg(format!(
             "--target={}",
-            build_target::target_triple().unwrap()
-        ))
+            target)
+        )
         .generate()
         .unwrap()
         .write_to_file("src/luau.rs")
@@ -82,17 +82,6 @@ fn new_cmake_config() -> cmake::Config {
         config.define(
             "CMAKE_CXX_FLAGS",
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
-        );
-    } else if target == "i686-pc-windows-gnu" {
-        let mingw32 = r"C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin";
-        config.define("CMAKE_SYSTEM_NAME", "Windows");
-        config.define("CMAKE_SYSTEM_PROCESSOR", "X86");
-        config.define("CMAKE_C_COMPILER", format!(r"{}\gcc.exe", mingw32));
-        config.define("CMAKE_CXX_COMPILER", format!(r"{}\g++.exe", mingw32));
-        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -m32");
-        config.define(
-            "CMAKE_CXX_FLAGS",
-            "-ffunction-sections -fdata-sections -m32",
         );
     } else if target == "wasm32-unknown-unknown" {
         config.define("CMAKE_SYSTEM_NAME", "Emscripten");

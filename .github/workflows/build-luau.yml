@@ -21,11 +21,9 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-          # Windows (x64/x86)
+          # Windows (x64)
           - os: windows-latest
             target: x86_64-pc-windows-gnu
-          - os: windows-latest
-            target: i686-pc-windows-gnu
           # Android (arm64/x86_64)
           - os: ubuntu-latest
             target: aarch64-linux-android
@@ -78,10 +76,10 @@ jobs:
 
       - name: Set up MinGW
         id: mingw_setup
-        if: matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu'
+        if: matrix.target == 'x86_64-pc-windows-gnu'
         uses: egor-tensin/setup-mingw@v2
         with:
-          platform: ${{ matrix.target == 'i686-pc-windows-gnu' && 'x86' || 'x64' }}
+          platform: x64
           version: 12.2.0
 
       - name: Set up Emscripten
@@ -130,8 +128,8 @@ jobs:
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
           CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gcc || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc') || '' }}
-          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gxx || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-g++') || '' }}
+          CC: ${{ matrix.target == 'x86_64-pc-windows-gnu' && steps.mingw_setup.outputs.gcc || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc') || '' }}
+          CXX: ${{ matrix.target == 'x86_64-pc-windows-gnu' && steps.mingw_setup.outputs.gxx || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-g++') || '' }}
           CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER: emcc
         run: |
           cargo build --release --target ${{ matrix.target }}
