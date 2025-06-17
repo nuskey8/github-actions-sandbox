@@ -71,18 +71,12 @@ jobs:
           sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt-get install -y build-essential
       
-      - name: Set up MinGW (x86)
-        if: matrix.target == 'i686-pc-windows-gnu'
+      - name: Set up MinGW
+        id: mingw_setup
+        if: matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu'
         uses: egor-tensin/setup-mingw@v2
         with:
-          platform: x86
-          version: 12.2.0
-
-      - name: Set up MinGW (x64)
-        if: matrix.target == 'x86_64-pc-windows-gnu'
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
+          platform: ${{ matrix.target == 'i686-pc-windows-gnu' && 'x86' || 'x64' }}
           version: 12.2.0
   
       - name: Set up Emscripten
@@ -119,8 +113,8 @@ jobs:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
           CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang
-          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') || '' }}
-          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') || '' }}
+          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gcc || '' }}
+          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') && steps.mingw_setup.outputs.gxx  || '' }}
           CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER: emcc
         run: |
           cargo build --release --target ${{ matrix.target }}
