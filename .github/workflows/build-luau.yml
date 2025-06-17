@@ -87,6 +87,29 @@ jobs:
         if: matrix.target == 'wasm32-unknown-emscripten'
         uses: mymindstorm/setup-emsdk@v14
 
+      - name: Set up Environment Variables for Emscripten
+        if: matrix.target == 'wasm32-unknown-emscripten'
+        run: |
+          EMSDK_PATH=$(dirname $(dirname $(which emcc)))
+          echo "EMSDK_PATH=$EMSDK_PATH"
+          
+          echo "EMSDK=$EMSDK_PATH" >> $GITHUB_ENV
+          echo "EMSCRIPTEN=$EMSDK_PATH/upstream/emscripten" >> $GITHUB_ENV
+          echo "PATH=$EMSDK_PATH/upstream/emscripten:$PATH" >> $GITHUB_ENV
+          echo "PATH=$EMSDK_PATH/upstream/bin:$PATH" >> $GITHUB_ENV
+          
+          TOOLCHAIN_FILE="$EMSDK_PATH/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+          if [ -f "$TOOLCHAIN_FILE" ]; then
+            echo "Toolchain file found: $TOOLCHAIN_FILE"
+          else
+            echo "Error: Toolchain file not found: $TOOLCHAIN_FILE"
+            exit 1
+          fi
+    
+          echo "Emscripten version:"
+          emcc --version
+        shell: bash
+
       - name: Set up Android SDK & NDK
         id: setup-ndk
         if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
