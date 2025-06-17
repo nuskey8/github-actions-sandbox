@@ -26,10 +26,33 @@ fn main() {
             "../../luau/Compiler/include/luacode.h",
         ])
         .clang_arg(format!("--target={}", target))
+        .layout_tests(false)
         .generate()
         .unwrap()
         .write_to_file("src/luau.rs")
         .unwrap();
+
+    bindgen::Builder::default()
+        .headers(["../../luau/Require/Runtime/include/Luau/Require.h"])
+        .clang_arg("-x")
+        .clang_arg("c++")
+        .clang_arg("-std=c++17")
+        .clang_arg("-I../../luau/Compiler/include")
+        .clang_arg("-I../../luau/VM/include")
+        .clang_arg("-I../../luau/Require/Runtime/include")
+        .clang_arg("-DLUA_API=extern\"C\"")
+        .allowlist_function("luarequire_.*")
+        .allowlist_function("luaopen_require")
+        .allowlist_type("luarequire_.*")
+        .blocklist_type("lua_State")
+        .raw_line("use super::luau::*;")
+        .clang_arg(format!("--target={}", target))
+        .layout_tests(false)
+        .generate()
+        .unwrap()
+        .write_to_file("src/luau_require.rs")
+        .unwrap();
+
 }
 
 fn new_cmake_config() -> cmake::Config {
