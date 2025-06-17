@@ -64,21 +64,60 @@ jobs:
             rustup target add wasm32-unknown-unknown
           fi
 
-      - name: Install libc++ (for Linux C++ linking)
+      - name: Install libc++
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libc++-dev libc++abi-dev
+          sudo apt-get install -y build-essential
 
-      - name: Install MinGW-w64 (32bit)
-        if: matrix.target == 'i686-pc-windows-gnu'
+      - name: Install MinGW-w64 and Set Paths
+        if: matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu'
+        id: mingw_setup
         run: |
-          choco install mingw --x86 --force
-          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          
-          dir C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\
-          C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\gcc.exe --version
-          C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32\bin\g++.exe --version
+          $installDir = ""
+          if ("${{ matrix.target }}" -eq "i686-pc-windows-gnu") {
+              choco install mingw --x86 --force
+              $installDir = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw32"
+          } else { # x86_64-pc-windows-gnu
+              choco install mingw --x64 --force
+              $installDir = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64"
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Chocolatey Mingw installation failed! Exit code: $LASTEXITCODE"
+              exit 1
+          }
+
+          # Actual path verification
+          $actual_mingw_base = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\mingw\" -Name | Where-Object { $_ -like "tools*" } | Select-Object -First 1
+          if (-not $actual_mingw_base) {
+              Write-Error "ERROR: Could not find tools directory under C:\ProgramData\chocolatey\lib\mingw\"
+              exit 1
+          }
+          $actual_mingw_install_root = Join-Path "C:\ProgramData\chocolatey\lib\mingw" $actual_mingw_base
+          Write-Host "Actual Mingw install root found: $actual_mingw_install_root"
+
+          $gcc_path = (Get-ChildItem -Recurse "$actual_mingw_install_root" -Include "gcc.exe" | Select-Object -ExpandProperty FullName | Select-Object -First 1)
+          $gplus_path = (Get-ChildItem -Recurse "$actual_mingw_install_root" -Include "g++.exe" | Select-Object -ExpandProperty FullName | Select-Object -First 1)
+
+          if (-not $gcc_path) {
+              Write-Error "ERROR: gcc.exe not found under $actual_mingw_install_root"
+              exit 1
+          }
+          if (-not $gplus_path) {
+              Write-Error "ERROR: g++.exe not found under $actual_mingw_install_root"
+              exit 1
+          }
+
+          Write-Host "Found GCC at: $gcc_path"
+          Write-Host "Found G++ at: $gplus_path"
+          echo "GCC_PATH=$gcc_path" >> $GITHUB_OUTPUT
+          echo "GPLUS_PATH=$gplus_path" >> $GITHUB_OUTPUT
+
+          $gcc_dir = Split-Path -Parent $gcc_path
+          echo "$gcc_dir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Host "Added $gcc_dir to PATH."
         shell: pwsh
       
       - name: Set up Emscripten
@@ -91,6 +130,14 @@ jobs:
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r26d
+
+      - name: Set up Environment Variables for NDK
+        if: matrix.target == 'aarch64-linux-android' || matrix.target == 'x86_64-linux-android'
+        run: |
+          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}"
+          echo "PATH=${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH" >> $GITHUB_ENV
+          echo "PATH=${{ steps.setup-ndk.outputs.ndk-path}}/toolchains/x86_64-4.9/prebuilt/linux-x86_64/bin:$PATH" >> $GITHUB_ENV # Older NDKs might use this
+        shell: bash
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1
@@ -105,8 +152,11 @@ jobs:
         working-directory: native/luau-ffi
         env:
           CARGO_BUILD_TARGET: ${{ matrix.target }}
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang 
+          CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android26-clang
+          CC: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') || '' }}
+          CXX: ${{ (matrix.target == 'i686-pc-windows-gnu' || matrix.target == 'x86_64-pc-windows-gnu') || '' }}
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER: emcc
         run: |
           cargo build --release --target ${{ matrix.target }}
 
