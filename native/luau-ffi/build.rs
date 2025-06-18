@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 fn main() {
     new_cmake_config().build_target("Luau.Compiler").build();
     let dst = new_cmake_config().build_target("Luau.Require").build();
@@ -241,7 +243,7 @@ fn list_files_recursively(path: &Path, depth: usize) {
                 if let Ok(metadata) = fs::metadata(&path) {
                     if metadata.is_dir() {
                         println!("cargo:warning={}{}", indent, file_name);
-                        let full_path = path.join(&file_name);
+                        let full_path = path.join(file_name.to_string());
                         list_files_recursively(&full_path, depth + 1);
                     } else {
                         println!("cargo:warning={}{}", indent, file_name);
