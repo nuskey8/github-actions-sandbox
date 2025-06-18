@@ -26,6 +26,16 @@ fn main() {
     let target = build_target::target_triple().unwrap();
     if target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
+    } else if target == "x86_64-pc-windows-msvc" {
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+        println!(
+            "cargo:rustc-link-search=native={}/build/Debug",
+            dst.display()
+        );
+        println!(
+            "cargo:rustc-link-search=native={}/build/Release",
+            dst.display()
+        );
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -109,7 +119,6 @@ using luarequire_pushproxyrequire_config_init_delegate = Luau.Native.luarequire_
 fn new_cmake_config() -> cmake::Config {
     let mut config = cmake::Config::new("../../luau");
 
-
     let target = build_target::target_triple().unwrap();
 
     if target == "x86_64-pc-windows-msvc" {
@@ -123,7 +132,7 @@ fn new_cmake_config() -> cmake::Config {
                 config.define("CMAKE_CXX_COMPILER", cxx);
             }
         }
-        
+
         config.cxxflag("/EHsc");
     } else if target == "aarch64-unknown-linux-gnu" {
         config.define("CMAKE_SYSTEM_NAME", "Linux");
