@@ -123,8 +123,6 @@ fn new_cmake_config() -> cmake::Config {
     let target = build_target::target_triple().unwrap();
 
     if target == "x86_64-pc-windows-msvc" {
-        config.no_default_flags(true);
-
         if let Ok(cc) = std::env::var("CC") {
             if !cc.is_empty() {
                 config.define("CMAKE_C_COMPILER", cc);
@@ -250,10 +248,6 @@ fn new_csbindgen_builder(src: &'static str) -> csbindgen::Builder {
 }
 
 fn log_files_in_directory(path: &Path, depth: usize) -> Result<(), Box<dyn std::error::Error>> {
-    if depth > 1 {
-        return Ok(());
-    }
-
     let indent = "-".repeat(depth);
     if path.is_dir() {
         for entry in fs::read_dir(path)? {
