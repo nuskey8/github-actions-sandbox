@@ -1,6 +1,5 @@
 fn main() {
     new_cmake_config().build_target("Luau.Compiler").build();
-
     let dst = new_cmake_config().build_target("Luau.Require").build();
 
     println!("cargo:rustc-link-search=native={}/build", dst.display());
@@ -14,9 +13,6 @@ fn main() {
     let target = build_target::target_triple().unwrap();
     if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
-    } else if target == "wasm32-unknown-emscripten" {
-        println!("cargo:rustc-link-arg=-s");
-        println!("cargo:rustc-link-arg=SIDE_MODULE=1");
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -54,6 +50,56 @@ fn main() {
         .unwrap()
         .write_to_file("src/luau_require.rs")
         .unwrap();
+
+    let cs = new_csbindgen_builder("src/luau.rs")
+        .rust_file_header("use super::luau::*;")
+        .csharp_file_header(
+            "
+using lua_newstate_f_delegate = Luau.Native.lua_Alloc;
+using lua_pushcclosurek_fn__delegate = Luau.Native.lua_CFunction;
+using lua_tocfunction_return_delegate = Luau.Native.lua_CFunction;
+using lua_pushcclosurek_cont_delegate = Luau.Native.lua_Continuation;
+using lua_setuserdatadtor_dtor_delegate = Luau.Native.lua_Destructor;
+using lua_getuserdatadtor_return_delegate = Luau.Native.lua_Destructor;
+using lua_getallocf_return_delegate = Luau.Native.lua_Alloc;
+using lua_getcoverage_callback_delegate = Luau.Native.lua_Coverage;
+",
+        );
+
+    cs.generate_to_file(
+        "src/luau_ffi.rs",
+        "NativeMethods.g.cs",
+    )
+    .unwrap();
+
+    cs.csharp_dll_name_if(
+        "UNITY_IOS && !UNITY_EDITOR",
+        "__Internal",
+    )
+    .generate_csharp_file("NativeMethods.g.cs")
+    .unwrap();
+
+    let cs2 = new_csbindgen_builder("src/luau_require.rs")
+        .rust_file_header(
+            "
+use super::luau::*;
+use super::luau_require::*;
+",
+        )
+        .csharp_disable_emit_dll_name(true)
+        .csharp_file_header(
+            "
+using luarequire_pushrequire_config_init_delegate = Luau.Native.luarequire_Configuration_init;     
+using luaopen_require_config_init_delegate = Luau.Native.luarequire_Configuration_init;    
+using luarequire_pushproxyrequire_config_init_delegate = Luau.Native.luarequire_Configuration_init;   
+",
+        );
+
+    cs2.generate_to_file(
+        "src/luau_require_ffi.rs",
+        "NativeMethods.Require.g.cs",
+    )
+    .unwrap();
 }
 
 fn new_cmake_config() -> cmake::Config {
@@ -105,18 +151,6 @@ fn new_cmake_config() -> cmake::Config {
             "CMAKE_CXX_FLAGS",
             "-fPIC --target=arm64-apple-ios -miphoneos-version-min=17.5",
         );
-    } else if target == "wasm32-unknown-emscripten" {
-        config.define("CMAKE_SYSTEM_NAME", "Emscripten");
-        config.define("CMAKE_C_COMPILER", "emcc");
-        config.define("CMAKE_CXX_COMPILER", "em++");
-        config.define("CMAKE_AR", "emar");
-        config.define("CMAKE_RANLIB", "emranlib");
-        config.define("CMAKE_C_FLAGS", "-fPIC");
-        config.define("CMAKE_CXX_FLAGS", "-fPIC");
-        config.define("CMAKE_BUILD_TYPE", "Release");
-        config.define("CMAKE_VERBOSE_MAKEFILE", "ON");
-        config.define("CMAKE_POSITION_INDEPENDENT_CODE", "ON");
-        config.define("CMAKE_SHARED_LINKER_FLAGS", "-s SIDE_MODULE=1");
     } else if target == "aarch64-linux-android" {
         let ndk_home = std::env::var("ANDROID_NDK_HOME").unwrap();
         let ndk_bin = format!("{}/toolchains/llvm/prebuilt/linux-x86_64/bin", ndk_home);
@@ -170,4 +204,17 @@ fn new_cmake_config() -> cmake::Config {
     }
 
     config
+}
+
+fn new_csbindgen_builder(src: &'static str) -> csbindgen::Builder {
+    csbindgen::Builder::default()
+        .input_bindgen_file(src)
+        .rust_method_prefix("ffi_")
+        .csharp_entry_point_prefix("ffi_")
+        .csharp_method_prefix("")
+        .csharp_namespace("Luau.Native")
+        .csharp_dll_name("libluau")
+        .csharp_class_accessibility("public")
+        .csharp_generate_const_filter(|x| x.starts_with("LUA"))
+        .csharp_use_function_pointer(false)
 }
