@@ -14,7 +14,7 @@ fn main() {
     );
 
     log_files_in_directory(&dst.to_path_buf(), 0).unwrap();
-    run_cmake_build(&dst);
+    run_cmake_build(dst.to_str().unwrap());
 
     println!("cargo:rustc-link-search=native={}/build", dst.display());
     println!("cargo:rustc-link-lib=static=Luau.Ast");
