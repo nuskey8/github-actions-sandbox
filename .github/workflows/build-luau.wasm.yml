@@ -1,0 +1,64 @@
+name: Build Luau - WebAssembly
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }} on WebAssembly
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        include:
+          - target: wasm32-unknown-emscripten
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Set up toolchains
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+          rustup target add wasm32-unknown-emscripten
+
+      - name: Install libc++
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-dev libc++abi-dev
+          sudo apt-get install -y build-essential
+
+      - name: Set up Emscripten
+        id: setup-emsdk
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v1
+
+      - name: Install Ninja and Make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build make
+
+      - name: Build luau-ffi
+        working-directory: native/luau-ffi
+        env:
+          CARGO_BUILD_TARGET: ${{ matrix.target }}
+          CARGO_TARGET_WASM32_UNKNOWN_EMSCRIPTEN_LINKER: emcc
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: luau-ffi-${{ matrix.target }}
+          path: |
+            native/luau-ffi/target/${{ matrix.target }}/release/libluau.*
