@@ -13,6 +13,11 @@ fn main() {
     let target = build_target::target_triple().unwrap();
     if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
+        
+        if target == "x86_64-pc-windows-gnu" {
+            println!("cargo:rustc-link-lib=dylib=gcc_s");
+            println!("cargo:rustc-link-lib=dylib=gcc");
+        }
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
@@ -110,8 +115,11 @@ fn new_cmake_config() -> cmake::Config {
     if target == "x86_64-pc-windows-gnu" {
         config.define("CMAKE_SYSTEM_NAME", "Windows");
         config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
-        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections");
-        config.define("CMAKE_CXX_FLAGS", "-ffunction-sections -fdata-sections");
+        config.define("CMAKE_CXX_FLAGS", "-ffunction-sections -fdata-sections -static-libgcc -static-libstdc++");
+        config.define("CMAKE_C_FLAGS", "-ffunction-sections -fdata-sections -static-libgcc");
+        config.define("CMAKE_CXX_STANDARD", "17");
+        config.define("CMAKE_CXX_STANDARD_REQUIRED", "ON");
+        
         if let Ok(cc) = std::env::var("CC") {
             if !cc.is_empty() {
                 config.define("CMAKE_C_COMPILER", cc);
