@@ -1,8 +1,19 @@
-fn main() {
-    new_cmake_config().build_target("Luau.Compiler").build();
-    let dst = new_cmake_config().build_target("Luau.Require").build();
+use std::{fs, path::Path};
 
-    println!("cargo:warning=CMake configure completed: {}", dst.display());
+fn main() {
+    let dst = new_cmake_config().build_target("Luau.Compiler").build();
+    println!(
+        "cargo:warning=CMake configure (Luau.Compiler) completed: {}",
+        dst.display()
+    );
+
+    let dst = new_cmake_config().build_target("Luau.Require").build();
+    println!(
+        "cargo:warning=CMake configure (Luau.Require) completed: {}",
+        dst.display()
+    );
+
+    log_files_in_directory(&dst.to_path_buf(), 0).unwrap();
 
     println!("cargo:rustc-link-search=native={}/build", dst.display());
     println!("cargo:rustc-link-lib=static=Luau.Ast");
@@ -229,4 +240,27 @@ fn new_csbindgen_builder(src: &'static str) -> csbindgen::Builder {
         .csharp_class_accessibility("public")
         .csharp_generate_const_filter(|x| x.starts_with("LUA"))
         .csharp_use_function_pointer(false)
+}
+
+fn log_files_in_directory(path: &Path, depth: usize) -> Result<(), Box<dyn std::error::Error>> {
+    if depth > 1 {
+        return Ok(());
+    }
+
+    let indent = "-".repeat(depth);
+    if path.is_dir() {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_dir() {
+                log_files_in_directory(&path, depth + 1)?;
+            } else {
+                println!("cargo:warning={}{}", indent, path.display());
+            }
+        }
+    } else {
+        println!("cargo:warning={}{}", indent, path.display());
+    }
+    Ok(())
 }
