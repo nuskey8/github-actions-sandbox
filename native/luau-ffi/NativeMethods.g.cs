@@ -22,7 +22,12 @@ namespace Luau.Native
 {
     public static unsafe partial class NativeMethods
     {
+#if UNITY_IOS && !UNITY_EDITOR
+        const string __DllName = "__Internal";
+#else
         const string __DllName = "libluau";
+#endif
+        
 
         public const uint LUA_USE_LONGJMP = 0;
         public const uint LUA_IDSIZE = 256;
