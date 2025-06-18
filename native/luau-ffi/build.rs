@@ -15,19 +15,11 @@ fn main() {
 
     log_files_in_directory(&dst.to_path_buf(), 0).unwrap();
 
-    println!("cargo:rustc-link-search=native={}/build", dst.display());
-    println!("cargo:rustc-link-lib=static=Luau.Ast");
-    println!("cargo:rustc-link-lib=static=Luau.Config");
-    println!("cargo:rustc-link-lib=static=Luau.Compiler");
-    println!("cargo:rustc-link-lib=static=Luau.VM");
-    println!("cargo:rustc-link-lib=static=Luau.RequireNavigator");
-    println!("cargo:rustc-link-lib=static=Luau.Require");
-
     let target = build_target::target_triple().unwrap();
     if target == "aarch64-unknown-linux-gnu" {
+        println!("cargo:rustc-link-search=native={}/build", dst.display());
         println!("cargo:rustc-link-lib=dylib=stdc++");
     } else if target == "x86_64-pc-windows-msvc" {
-        println!("cargo:rustc-link-lib=dylib=stdc++");
         println!(
             "cargo:rustc-link-search=native={}/build/Debug",
             dst.display()
@@ -36,9 +28,18 @@ fn main() {
             "cargo:rustc-link-search=native={}/build/Release",
             dst.display()
         );
+        println!("cargo:rustc-link-lib=dylib=stdc++");
     } else {
+        println!("cargo:rustc-link-search=native={}/build", dst.display());
         println!("cargo:rustc-link-lib=dylib=c++");
     }
+
+    println!("cargo:rustc-link-lib=static=Luau.Ast");
+    println!("cargo:rustc-link-lib=static=Luau.Config");
+    println!("cargo:rustc-link-lib=static=Luau.Compiler");
+    println!("cargo:rustc-link-lib=static=Luau.VM");
+    println!("cargo:rustc-link-lib=static=Luau.RequireNavigator");
+    println!("cargo:rustc-link-lib=static=Luau.Require");
 
     bindgen::Builder::default()
         .headers([
