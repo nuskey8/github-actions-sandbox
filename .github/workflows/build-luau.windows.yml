@@ -26,6 +26,12 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Install Visual Studio C++ Build Tools
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v1
 
