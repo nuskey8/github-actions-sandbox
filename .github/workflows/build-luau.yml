@@ -1,16 +1,16 @@
 name: Build Luau
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
   build-windows:
-    uses: ./.github/workflows/build-luau.windows.yaml
+    uses: ./build-luau.windows.yaml
   build-linux:
-    uses: ./.github/workflows/build-luau.linux.yaml
+    uses: ./build-luau.linux.yaml
   build-macOS:
-    uses: ./.github/workflows/build-luau.macOS.yaml
+    uses: ./build-luau.macOS.yaml
   build-iOS:
-    uses: ./.github/workflows/build-luau.ios.yaml
+    uses: ./build-luau.ios.yaml
   build-android:
-    uses: ./.github/workflows/build-luau.android.yaml
+    uses: ./build-luau.android.yaml
