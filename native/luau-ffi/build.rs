@@ -11,13 +11,8 @@ fn main() {
     println!("cargo:rustc-link-lib=static=Luau.Require");
 
     let target = build_target::target_triple().unwrap();
-     if target == "x86_64-pc-windows-gnu" || target == "aarch64-unknown-linux-gnu" {
+    if target == "aarch64-unknown-linux-gnu" {
         println!("cargo:rustc-link-lib=dylib=stdc++");
-        
-        if target == "x86_64-pc-windows-gnu" {
-            println!("cargo:rustc-link-lib=dylib=gcc_s");
-            println!("cargo:rustc-link-lib=dylib=gcc");
-        }
     } else {
         println!("cargo:rustc-link-lib=dylib=c++");
     }
