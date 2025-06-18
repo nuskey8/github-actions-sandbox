@@ -21,14 +21,9 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=stdc++");
     } else if target == "x86_64-pc-windows-msvc" {
         println!(
-            "cargo:rustc-link-search=native={}/build/Debug",
-            dst.display()
-        );
-        println!(
             "cargo:rustc-link-search=native={}/build/Release",
             dst.display()
         );
-        println!("cargo:rustc-link-lib=dylib=stdc++");
     } else {
         println!("cargo:rustc-link-search=native={}/build", dst.display());
         println!("cargo:rustc-link-lib=dylib=c++");
