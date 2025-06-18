@@ -8,9 +8,9 @@ jobs:
     uses: ./.github/workflows/build-luau.windows.yaml
   build-linux:
     uses: ./.github/workflows/build-luau.linux.yaml
-  build-macOS:
-    uses: ./.github/workflows/build-luau.macOS.yaml
-  build-iOS:
+  build-macos:
+    uses: ./.github/workflows/build-luau.macos.yaml
+  build-ios:
     uses: ./.github/workflows/build-luau.ios.yaml
   build-android:
     uses: ./.github/workflows/build-luau.android.yaml
