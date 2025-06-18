@@ -112,14 +112,6 @@ fn new_cmake_config() -> cmake::Config {
     let target = build_target::target_triple().unwrap();
 
     if target == "x86_64-pc-windows-msvc" {
-        config.define("CMAKE_SYSTEM_NAME", "Windows");
-        config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
-        config.define("CMAKE_CXX_STANDARD", "17");
-        config.define("CMAKE_CXX_STANDARD_REQUIRED", "ON");
-
-        config.define("CMAKE_CXX_FLAGS", "/MT");
-        config.define("CMAKE_C_FLAGS", "/MT");
-
         if let Ok(cc) = std::env::var("CC") {
             if !cc.is_empty() {
                 config.define("CMAKE_C_COMPILER", cc);
