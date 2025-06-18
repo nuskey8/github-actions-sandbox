@@ -1,10 +1,8 @@
-use std::{fs, path::Path};
-
 fn main() {
     new_cmake_config().build_target("Luau.Compiler").build();
     let dst = new_cmake_config().build_target("Luau.Require").build();
 
-    list_files_recursively(&dst, 0);
+    println!("cargo:warning=CMake configure completed: {}", dst.display());
 
     println!("cargo:rustc-link-search=native={}/build", dst.display());
     println!("cargo:rustc-link-lib=static=Luau.Ast");
@@ -231,25 +229,4 @@ fn new_csbindgen_builder(src: &'static str) -> csbindgen::Builder {
         .csharp_class_accessibility("public")
         .csharp_generate_const_filter(|x| x.starts_with("LUA"))
         .csharp_use_function_pointer(false)
-}
-
-fn list_files_recursively(path: &Path, depth: usize) {
-    let indent = "  ".repeat(depth);
-    if let Ok(entries) = fs::read_dir(path) {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                let file_name = path.file_name().unwrap().to_string_lossy();
-                if let Ok(metadata) = fs::metadata(&path) {
-                    if metadata.is_dir() {
-                        println!("cargo:warning={}{}", indent, file_name);
-                        let full_path = path.join(file_name.to_string());
-                        list_files_recursively(&full_path, depth + 1);
-                    } else {
-                        println!("cargo:warning={}{}", indent, file_name);
-                    }
-                }
-            }
-        }
-    }
 }
