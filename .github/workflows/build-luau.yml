@@ -5,12 +5,12 @@ on:
 
 jobs:
   build-windows:
-    uses: ./build-luau.windows.yaml
+    uses: ./.github/workflows/build-luau.windows.yaml
   build-linux:
-    uses: ./build-luau.linux.yaml
+    uses: ./.github/workflows/build-luau.linux.yaml
   build-macOS:
-    uses: ./build-luau.macOS.yaml
+    uses: ./.github/workflows/build-luau.macOS.yaml
   build-iOS:
-    uses: ./build-luau.ios.yaml
+    uses: ./.github/workflows/build-luau.ios.yaml
   build-android:
-    uses: ./build-luau.android.yaml
+    uses: ./.github/workflows/build-luau.android.yaml
