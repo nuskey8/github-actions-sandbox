@@ -2,6 +2,8 @@ fn main() {
     new_cmake_config().build_target("Luau.Compiler").build();
     let dst = new_cmake_config().build_target("Luau.Require").build();
 
+    list_files_recursively(&dst, 0);
+
     println!("cargo:rustc-link-search=native={}/build", dst.display());
     println!("cargo:rustc-link-lib=static=Luau.Ast");
     println!("cargo:rustc-link-lib=static=Luau.Config");
@@ -66,18 +68,12 @@ using lua_getcoverage_callback_delegate = Luau.Native.lua_Coverage;
 ",
         );
 
-    cs.generate_to_file(
-        "src/luau_ffi.rs",
-        "NativeMethods.g.cs",
-    )
-    .unwrap();
+    cs.generate_to_file("src/luau_ffi.rs", "NativeMethods.g.cs")
+        .unwrap();
 
-    cs.csharp_dll_name_if(
-        "UNITY_IOS && !UNITY_EDITOR",
-        "__Internal",
-    )
-    .generate_csharp_file("NativeMethods.g.cs")
-    .unwrap();
+    cs.csharp_dll_name_if("UNITY_IOS && !UNITY_EDITOR", "__Internal")
+        .generate_csharp_file("NativeMethods.g.cs")
+        .unwrap();
 
     let cs2 = new_csbindgen_builder("src/luau_require.rs")
         .rust_file_header(
@@ -95,11 +91,8 @@ using luarequire_pushproxyrequire_config_init_delegate = Luau.Native.luarequire_
 ",
         );
 
-    cs2.generate_to_file(
-        "src/luau_require_ffi.rs",
-        "NativeMethods.Require.g.cs",
-    )
-    .unwrap();
+    cs2.generate_to_file("src/luau_require_ffi.rs", "NativeMethods.Require.g.cs")
+        .unwrap();
 }
 
 fn new_cmake_config() -> cmake::Config {
@@ -112,10 +105,10 @@ fn new_cmake_config() -> cmake::Config {
         config.define("CMAKE_SYSTEM_PROCESSOR", "x86_64");
         config.define("CMAKE_CXX_STANDARD", "17");
         config.define("CMAKE_CXX_STANDARD_REQUIRED", "ON");
-        
+
         config.define("CMAKE_CXX_FLAGS", "/MT");
         config.define("CMAKE_C_FLAGS", "/MT");
-        
+
         if let Ok(cc) = std::env::var("CC") {
             if !cc.is_empty() {
                 config.define("CMAKE_C_COMPILER", cc);
@@ -236,4 +229,25 @@ fn new_csbindgen_builder(src: &'static str) -> csbindgen::Builder {
         .csharp_class_accessibility("public")
         .csharp_generate_const_filter(|x| x.starts_with("LUA"))
         .csharp_use_function_pointer(false)
+}
+
+fn list_files_recursively(path: &Path, depth: usize) {
+    let indent = "  ".repeat(depth);
+    if let Ok(entries) = fs::read_dir(path) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                let path = entry.path();
+                let file_name = path.file_name().unwrap().to_string_lossy();
+                if let Ok(metadata) = fs::metadata(&path) {
+                    if metadata.is_dir() {
+                        println!("cargo:warning={}{}", indent, file_name);
+                        let full_path = path.join(&file_name);
+                        list_files_recursively(&full_path, depth + 1);
+                    } else {
+                        println!("cargo:warning={}{}", indent, file_name);
+                    }
+                }
+            }
+        }
+    }
 }
