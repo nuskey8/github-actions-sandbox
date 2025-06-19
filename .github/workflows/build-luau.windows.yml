@@ -47,4 +47,4 @@ jobs:
         with:
           name: luau-ffi-${{ matrix.target }}
           path: |
-            native/luau-ffi/target/${{ matrix.target }}/release/libluau.*
+            native/luau-ffi/target/${{ matrix.target }}/release
